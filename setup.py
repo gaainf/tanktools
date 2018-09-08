@@ -28,12 +28,12 @@ SETUP_REQUIRES = [
 REQUIRES = [
     'python-dateutil>=2.5.0',
     'pandas>=0.23.4',
+    'flake8>=3.5.0',
 ]
 
 TEST_REQUIRES = [
     'pytest>=2.7',
     'pytest-cov>=2.6.0',
-    'flake8>=3.5.0'
 ]
 
 setup(
