@@ -33,6 +33,7 @@ REQUIRES = [
 TEST_REQUIRES = [
     'pytest>=2.7',
     'pytest-cov>=2.6.0',
+    'flake8>=3.5.0'
 ]
 
 setup(

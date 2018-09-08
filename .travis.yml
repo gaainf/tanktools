@@ -5,6 +5,8 @@ python:
   - "3.6"
 install:
   - python setup.py install
+before_script:
+  - flake8 .
 script:
   - python setup.py test
 after_success:
