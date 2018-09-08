@@ -33,7 +33,6 @@ REQUIRES = [
 TEST_REQUIRES = [
     'pytest>=2.7',
     'pytest-cov>=2.6.0',
-    'asynctest>=0.12.2',
 ]
 
 setup(
@@ -59,18 +58,9 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.2',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: Implementation :: CPython',
         'Topic :: Software Development',
         'Topic :: Utilities',
     ],
-    # entry_points={
-    #    'console_scripts': [
-    #    ],
-    # },
 )
