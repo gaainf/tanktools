@@ -44,8 +44,11 @@ def main():
     ]
     data = phout.parse_phout(args.input, flags)
     phout.print_quantiles(data, 'receive_time', quantile_list)
-    phout.print_quantiles(data, 'interval_real', quantile_list)
     phout.print_quantiles(data, 'latency', quantile_list)
+    phout.print_quantiles(data, 'interval_real', quantile_list)
+
+    rps = phout.get_total_rps(data)
+    print("\n\nTotal RPS: %.2f" % rps)
 
 
 if __name__ == '__main__':

@@ -21,4 +21,5 @@ So you can:
 
 - extract dataframes by microtime (and another column)
 
-- group and analyze only specific data
+- group and analyze specific data like total/partial RPS,
+  Avg. Request/Response time

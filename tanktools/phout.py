@@ -191,3 +191,28 @@ def print_quantiles(data_frame, field_name, quantile_list=None):
             }
         )
     )
+
+
+def get_total_rps(data_frame):
+    """Calculate RPS for all requests in DataFrame
+
+    Args:
+        data_frame (DataFrame): data
+
+    Returns:
+        int: Requests per second
+    """
+
+    from_date = data_frame.iloc[0].time
+    to_date = data_frame.iloc[-1].time
+    duration = to_date - from_date
+    if duration < 0:
+        raise ValueError(
+            "Incorrect time values from_date > to_data (%f > %f)" %
+            (from_date, to_date)
+        )
+    if duration == 0:
+        duration = 1
+    requests_count = data_frame.shape[0]
+
+    return requests_count/duration

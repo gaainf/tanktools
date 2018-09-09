@@ -58,12 +58,27 @@ class TestPhout(object):
         # remove file after test
         os.remove(filename)
 
+    @pytest.fixture()
+    def remove_data_file(self, request):
+        """Remove data file decoraotor"""
+
+        def return_filename(param):
+            request.param = param
+            return param
+
+        yield return_filename
+
+        # remove file after test
+        os.remove(request.param)
+
+    @pytest.mark.positive
     def test_phout_fields_struct_fields_count(self):
         """Check PHOUT_FIELDS constant format"""
 
         assert len(phout.PHOUT_FIELDS) == 12, "unexpected PHOUT_FIELDS format"
 
-    def test_start_criteria_positive_limit_flag(self):
+    @pytest.mark.positive
+    def test_start_criteria_limit_flag(self):
         """Check that stop_criteria hits if limit flag >= index
         and vice versa
         """
@@ -73,7 +88,8 @@ class TestPhout(object):
                                        flags), "limit flag should not hit"
         assert phout.stop_criteria(1, None, flags), "limit flag should hit"
 
-    def test_stop_criteria_positive_to_date_flag(self):
+    @pytest.mark.positive
+    def test_stop_criteria_to_date_flag(self):
         """Check that stop_criteria hits if date >= to_date flag
         and vice versa"""
 
@@ -95,7 +111,8 @@ class TestPhout(object):
         assert not phout.stop_criteria(
             0, date, flags), "to_date flag should not hit"
 
-    def test_stop_criteria_negative_from_date_flag(self):
+    @pytest.mark.negative
+    def test_stop_criteria_from_date_flag(self):
         """Check that stop_criteria doesn't take into account from_date flag"""
 
         flags = {
@@ -118,7 +135,8 @@ class TestPhout(object):
         assert not phout.stop_criteria(
             0, date, flags), "from_date flag should not hit"
 
-    def test_start_criteria_positive_from_date_flag(self):
+    @pytest.mark.positive
+    def test_start_criteria_from_date_flag(self):
         """Check that start_criteria hits if date >= from_date flag
         and vice versa
         """
@@ -141,7 +159,8 @@ class TestPhout(object):
         assert not phout.start_criteria(
             date, flags), "from_date flag should not hit"
 
-    def test_start_criteria_positive_to_date_flag(self):
+    @pytest.mark.positive
+    def test_start_criteria_to_date_flag(self):
         """Check that start_criteria doesn't take into account to_date flag"""
 
         flags = {
@@ -161,17 +180,16 @@ class TestPhout(object):
             dateutil.parser.parse('2000-01-01 00:00:00').strftime("%s.%f"))
         assert phout.start_criteria(date, flags), "to_date flag should hit"
 
-    @pytest.mark.usefixtures("prepare_data_file")
-    def test_parse_phout_positive_parsing_fields_count(self,
-                                                       prepare_data_file):
+    @pytest.mark.positive
+    def test_parse_phout_parsing_fields_count(self, prepare_data_file):
         """Check that positive phout file is parsed correctly"""
 
         result = phout.parse_phout(prepare_data_file)
         assert result.shape[0] == 10, "unexpected rows count"
         assert result.shape[1] == 12, "unexpected columns count"
 
-    @pytest.mark.usefixtures("prepare_data_file")
-    def test_parse_phout_positive_from_date_flag(self, prepare_data_file):
+    @pytest.mark.positive
+    def test_parse_phout_from_date_flag(self, prepare_data_file):
         """Check that positive phout file is parsed correctly"""
 
         flags = {'from_date': '2018-01-18 20:09:43.127'}
@@ -182,8 +200,8 @@ class TestPhout(object):
         assert result['latency'].iloc[
             -1] == '4750', "unexpected the last element value"
 
-    @pytest.mark.usefixtures("prepare_data_file")
-    def test_parse_phout_positive_to_date_flag(self, prepare_data_file):
+    @pytest.mark.positive
+    def test_parse_phout_to_date_flag(self, prepare_data_file):
         """Check that positive phout file is parsed correctly"""
 
         flags = {'to_date': '2018-01-18 20:09:43.409'}
@@ -194,8 +212,8 @@ class TestPhout(object):
         assert result['latency'].iloc[
             -1] == '4500', "unexpected the last element value"
 
-    @pytest.mark.usefixtures("prepare_data_file")
-    def test_parse_phout_positive_limit_flag(self, prepare_data_file):
+    @pytest.mark.positive
+    def test_parse_phout_limit_flag(self, prepare_data_file):
         """Check that positive phout file is parsed correctly"""
 
         flags = {'limit': 1}
@@ -206,24 +224,25 @@ class TestPhout(object):
         assert result['latency'].iloc[
             -1] == '5785', "unexpected the last element value"
 
-    def test_parse_phout_negative_empty_lines_at_the_end(self):
+    @pytest.mark.negative
+    def test_parse_phout_empty_lines_at_the_end(self, remove_data_file):
         """Check that phout file with empty lines is parsed correctly"""
 
-        filename = "testfile.phout"
+        filename = remove_data_file("testfile.phout")
         data = self.set_phout_data()
         data.extend(["", "", ""])
         self.set_phout_file(filename, data)
         result = phout.parse_phout(filename)
         assert result.shape[0] == 10, "unexpected rows count"
         assert result.shape[1] == 12, "unexpected columns count"
-        os.remove(filename)
 
-    def test_parse_phout_negative_incomplete_fields_count(self):
-        """Check that phout file with incomplete or exceeded fields count
+    @pytest.mark.negative
+    def test_parse_phout_incomplete_fields_count(self, remove_data_file):
+        """Check that phout file with incomplete fields count
         in line leads to exception
         """
 
-        filename = "testfile.phout"
+        filename = remove_data_file("testfile.phout")
         data = self.set_phout_data()
         data.append("a\tb")
         self.set_phout_file(filename, data)
@@ -232,8 +251,14 @@ class TestPhout(object):
         with pytest.raises(
                 ValueError, match=r'Incorrect fields count in line 11'):
             phout.parse_phout(filename)
-        os.remove(filename)
 
+    @pytest.mark.negative
+    def test_parse_phout_exceeded_fields_count(self, remove_data_file):
+        """Check that phout file with exceeded fields count
+        in line leads to exception
+        """
+
+        filename = remove_data_file("testfile.phout")
         data = self.set_phout_data()
         data.append("1\t2\t3\t4\t5\t6\t7\t8\t9\t10\t11\t12\t13")
         self.set_phout_file(filename, data)
@@ -242,15 +267,15 @@ class TestPhout(object):
         with pytest.raises(
                 ValueError, match=r'Incorrect fields count in line 11'):
             phout.parse_phout(filename)
-        os.remove(filename)
 
+    @pytest.mark.positive
     @pytest.mark.skip(reason="format is not checked in parse_phout")
-    def test_parse_phout_negative_incorrect_fields_format(self):
+    def test_parse_phout_incorrect_fields_format(self, remove_data_file):
         """Check that phout file with incorrect fields in line leads
         to exception
         """
 
-        filename = "testfile.phout"
+        filename = remove_data_file("testfile.phout")
         data = self.set_phout_data()
         data.append("a\tb\tc\td\te\tf\tg\th\ti\tj\tk\tl")
         self.set_phout_file(filename, data)
@@ -259,45 +284,45 @@ class TestPhout(object):
         with pytest.raises(
                 ValueError, match=r'Incorrect fields count in line 11'):
             phout.parse_phout(filename)
-        os.remove(filename)
 
-    @pytest.mark.usefixtures("prepare_data_file")
-    def test_get_quantiles_positive_check_default_quantile_list(
+    @pytest.mark.positive
+    def test_get_quantiles_check_default_quantile_list(
             self, prepare_data_file):
         """Check that get_quantiles function returns expected result
         for default quantile_list
         """
 
-        df = phout.parse_phout(prepare_data_file)
-        quantiles = phout.get_quantiles(df, 'interval_real')
+        data_frame = phout.parse_phout(prepare_data_file)
+        quantiles = phout.get_quantiles(data_frame, 'interval_real')
         assert quantiles['quantile'].values.tolist() == [
             0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.98, 0.99, 1
         ], "unexpected default quantile_list values"
 
-    @pytest.mark.usefixtures("prepare_data_file")
-    def test_get_quantiles_positive_check_custom_quantile_list(
+    @pytest.mark.positive
+    def test_get_quantiles_check_custom_quantile_list(
             self, prepare_data_file):
         """Check that get_quantiles function returns expected result
         for custom quantile_list
         """
 
-        df = phout.parse_phout(prepare_data_file)
+        data_frame = phout.parse_phout(prepare_data_file)
         quantile_list = [
             0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.98, 0.99,
             0.995, 1
         ]
-        quantiles = phout.get_quantiles(df, 'interval_real', quantile_list)
-        assert quantiles['quantile'].values.tolist(
-        ) == quantile_list, "unexpected quantile_list values"
+        quantiles = phout.get_quantiles(
+            data_frame, 'interval_real', quantile_list)
+        assert quantiles['quantile'].values.tolist() == \
+            quantile_list, "unexpected quantile_list values"
 
-    @pytest.mark.usefixtures("prepare_data_file")
-    def test_get_quantiles_positive_check_latency(self, prepare_data_file):
+    @pytest.mark.positive
+    def test_get_quantiles_check_latency(self, prepare_data_file):
         """Check that get_quantiles function returns expected result
         for latency field
         """
 
-        df = phout.parse_phout(prepare_data_file)
-        quantiles = phout.get_quantiles(df, 'latency')
+        data_frame = phout.parse_phout(prepare_data_file)
+        quantiles = phout.get_quantiles(data_frame, 'latency')
         # check index
         assert quantiles['quantile'].values.tolist() == [
             0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.98, 0.99, 1
@@ -309,9 +334,8 @@ class TestPhout(object):
             5780, 5785
         ], "unexpected quantiles values"
 
-    @pytest.mark.usefixtures("prepare_data_file")
-    def test_get_quantiles_positive_check_receive_time(self,
-                                                       prepare_data_file):
+    @pytest.mark.positive
+    def test_get_quantiles_check_receive_time(self, prepare_data_file):
         """Check that get_quantiles function returns expected result
         for receive_time field
         """
@@ -323,14 +347,14 @@ class TestPhout(object):
             13, 14, 14, 16, 18, 19, 21, 28, 41, 41, 41, 41, 41
         ], "unexpected quantiles values"
 
-    @pytest.mark.usefixtures("prepare_data_file")
-    def test_get_quantiles_positive_latency(self, prepare_data_file):
+    @pytest.mark.positive
+    def test_get_quantiles_latency(self, prepare_data_file):
         """Check that get_quantiles function returns expected result
         for latency field
         """
 
-        df = phout.parse_phout(prepare_data_file)
-        quantiles = phout.get_quantiles(df, 'latency')
+        data_frame = phout.parse_phout(prepare_data_file)
+        quantiles = phout.get_quantiles(data_frame, 'latency')
         # check index
         assert quantiles['quantile'].values.tolist() == [
             0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.98, 0.99, 1
@@ -342,30 +366,30 @@ class TestPhout(object):
             5780, 5785
         ], "unexpected quantiles values"
 
-    def test_get_quantiles_negative_empty_data(self):
+    @pytest.mark.negative
+    def test_get_quantiles_empty_data(self, remove_data_file):
         """Check that get_quantiles function returns expected result
         for receive_time field
         """
 
-        filename = "testfile.phout"
+        filename = remove_data_file("testfile.phout")
         self.set_phout_file(filename, [])
-        df = phout.parse_phout(filename)
+        data_frame = phout.parse_phout(filename)
 
-        quantiles = phout.get_quantiles(df, 'receive_time')
+        quantiles = phout.get_quantiles(data_frame, 'receive_time')
         quantiles['receive_time'] = quantiles['receive_time'].fillna(0).astype(
             int)
         assert quantiles['receive_time'].values.tolist() == [
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
         ], "quantiles should consist of 0 values"
-        os.remove(filename)
 
-    @pytest.mark.usefixtures("prepare_data_file")
-    def test_print_quantiles_positive_check_output_format(
+    @pytest.mark.positive
+    def test_print_quantiles_check_output_format(
             self, capsys, prepare_data_file):
         """Check that print_quantiles function prints in expected format"""
 
-        df = phout.parse_phout(prepare_data_file)
-        phout.print_quantiles(df, 'latency')
+        data_frame = phout.parse_phout(prepare_data_file)
+        phout.print_quantiles(data_frame, 'latency')
         out, err = capsys.readouterr()
         expected_output = u"""
 Percentiles for 10 requests
@@ -388,3 +412,72 @@ quantile (%)  latency (mks)
 """
         assert out == expected_output, "unexpected output text"
         assert err == "", "error is absent"
+
+    @pytest.mark.positive
+    def test_get_total_rps_check_duration_less_then_one_second(
+            self, prepare_data_file):
+        """Check that RPS is calculated correctly for duration < 1 second"""
+
+        data_frame = phout.parse_phout(prepare_data_file)
+        rps = phout.get_total_rps(data_frame)
+        assert round(rps, 2) == 22.08, "unexpected total RPS value"
+
+    @pytest.mark.positive
+    def test_get_total_rps_check_duration_greater_then_one_second(
+            self, remove_data_file):
+        """Check that RPS is calculated correctly for duration > 1 second"""
+
+        data = self.set_phout_data()
+        rows = [
+            "1516295383.462	#10	4507	194	52	4248	13	4429	26697	391	0	200",
+            "1516295383.484	#11	4811	254	61	4475	21	4709	26697	390	0	200",
+            "1516295383.507	#12	4372	211	62	4083	16	4278	26697	390	0	200",
+            "1516295383.529	#13	4799	235	58	4490	16	4710	26697	391	0	200",
+            "1516295383.549	#14	4446	184	53	4192	17	4363	26697	391	0	200",
+            "1516295383.572	#15	4224	215	51	3945	13	4147	26697	391	0	200",
+            "1516295383.589	#16	5091	224	62	4791	14	4999	26697	390	0	200",
+            "1516295383.611	#17	4673	216	60	4381	16	4580	26697	391	0	200",
+            "1516295383.629	#18	4981	227	59	4680	15	4893	26697	390	0	200",
+            "1516295383.646	#19	4318	180	55	4066	17	4233	26697	390	0	200",
+            "1516295384.009	#45	5155	220	60	4861	14	5066	26697	391	0	200"
+        ]
+        data.extend(rows)
+        filename = remove_data_file("testfile.phout")
+        self.set_phout_file(filename, data)
+        data_frame = phout.parse_phout(filename)
+        rps = phout.get_total_rps(data_frame)
+        assert round(rps, 2) == 20.47, "unexpected total RPS value"
+
+    @pytest.mark.negative
+    def test_get_total_rps_check_duration_equals_zero(self, remove_data_file):
+        """Check that RPS is calculated correctly for duration = 0 second"""
+
+        data = [
+            "1516295383.0	#10	4507	194	52	4248	13	4429	26697	391	0	200",
+            "1516295383.0	#11	4811	254	61	4475	21	4709	26697	390	0	200",
+        ]
+        filename = remove_data_file("testfile.phout")
+        self.set_phout_file(filename, data)
+        data_frame = phout.parse_phout(filename)
+        rps = phout.get_total_rps(data_frame)
+        assert rps == 2, "unexpected total RPS value"
+
+    @pytest.mark.negative
+    def test_get_total_rps_check_incorrect_time(self, remove_data_file):
+        """Check that get_quantiles function returns expected result
+        for latency field
+        """
+
+        data = [
+            "1516295383.0	#10	4507	194	52	4248	13	4429	26697	391	0	200",
+            "1516295382.0	#11	4811	254	61	4475	21	4709	26697	390	0	200",
+        ]
+        filename = remove_data_file("testfile.phout")
+        self.set_phout_file(filename, data)
+        data_frame = phout.parse_phout(filename)
+
+        # check exception text
+        with pytest.raises(
+                ValueError,
+                match=r'Incorrect time values from_date > to_data'):
+            phout.get_total_rps(data_frame)
