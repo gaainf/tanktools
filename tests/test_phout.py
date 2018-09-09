@@ -15,7 +15,7 @@ from tanktools import phout
 
 class TestPhout(object):
 
-    def setup_class(cls):
+    def setup_module(self):
         """Set timezone"""
 
         os.environ['TZ'] = 'Europe/Moscow'

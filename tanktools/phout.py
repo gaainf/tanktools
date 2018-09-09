@@ -148,7 +148,6 @@ def get_quantiles(data_frame, field_name, quantile_list=None):
     quantiles = data_frame[field_name].quantile(quantile_list)
     quantiles = quantiles.to_frame().reset_index()
     quantiles.rename(columns={'index': 'quantile'}, inplace=True)
-
     return quantiles
 
 
@@ -214,5 +213,4 @@ def get_total_rps(data_frame):
     if duration == 0:
         duration = 1
     requests_count = data_frame.shape[0]
-
     return requests_count/duration
