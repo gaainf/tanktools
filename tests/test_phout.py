@@ -10,6 +10,7 @@
 import os
 import dateutil
 import pytest
+import tempfile
 from tanktools import phout
 
 
@@ -48,7 +49,7 @@ class TestPhout(object):
         """Prepare data file decoraotor"""
 
         # create file
-        filename = "testfile.phout"
+        filename = tempfile.NamedTemporaryFile(delete=False).name
         data = self.set_phout_data()
         self.set_phout_file(filename, data)
 
@@ -62,7 +63,9 @@ class TestPhout(object):
     def remove_data_file(self, request):
         """Remove data file decoraotor"""
 
-        def return_filename(param):
+        def return_filename(param=None):
+            if not param:
+                param = tempfile.NamedTemporaryFile(delete=False).name
             request.param = param
             return param
 
@@ -228,7 +231,7 @@ class TestPhout(object):
     def test_parse_phout_empty_lines_at_the_end(self, remove_data_file):
         """Check that phout file with empty lines is parsed correctly"""
 
-        filename = remove_data_file("testfile.phout")
+        filename = remove_data_file()
         data = self.set_phout_data()
         data.extend(["", "", ""])
         self.set_phout_file(filename, data)
@@ -242,7 +245,7 @@ class TestPhout(object):
         in line leads to exception
         """
 
-        filename = remove_data_file("testfile.phout")
+        filename = remove_data_file()
         data = self.set_phout_data()
         data.append("a\tb")
         self.set_phout_file(filename, data)
@@ -258,7 +261,7 @@ class TestPhout(object):
         in line leads to exception
         """
 
-        filename = remove_data_file("testfile.phout")
+        filename = remove_data_file()
         data = self.set_phout_data()
         data.append("1\t2\t3\t4\t5\t6\t7\t8\t9\t10\t11\t12\t13")
         self.set_phout_file(filename, data)
@@ -275,7 +278,7 @@ class TestPhout(object):
         to exception
         """
 
-        filename = remove_data_file("testfile.phout")
+        filename = remove_data_file()
         data = self.set_phout_data()
         data.append("a\tb\tc\td\te\tf\tg\th\ti\tj\tk\tl")
         self.set_phout_file(filename, data)
@@ -372,7 +375,7 @@ class TestPhout(object):
         for receive_time field
         """
 
-        filename = remove_data_file("testfile.phout")
+        filename = remove_data_file()
         self.set_phout_file(filename, [])
         data_frame = phout.parse_phout(filename)
 
@@ -442,7 +445,7 @@ quantile (%)  latency (mks)
             "1516295384.009	#45	5155	220	60	4861	14	5066	26697	391	0	200"
         ]
         data.extend(rows)
-        filename = remove_data_file("testfile.phout")
+        filename = remove_data_file()
         self.set_phout_file(filename, data)
         data_frame = phout.parse_phout(filename)
         rps = phout.get_total_rps(data_frame)
@@ -456,7 +459,7 @@ quantile (%)  latency (mks)
             "1516295383.0	#10	4507	194	52	4248	13	4429	26697	391	0	200",
             "1516295383.0	#11	4811	254	61	4475	21	4709	26697	390	0	200",
         ]
-        filename = remove_data_file("testfile.phout")
+        filename = remove_data_file()
         self.set_phout_file(filename, data)
         data_frame = phout.parse_phout(filename)
         rps = phout.get_total_rps(data_frame)
@@ -472,7 +475,7 @@ quantile (%)  latency (mks)
             "1516295383.0	#10	4507	194	52	4248	13	4429	26697	391	0	200",
             "1516295382.0	#11	4811	254	61	4475	21	4709	26697	390	0	200",
         ]
-        filename = remove_data_file("testfile.phout")
+        filename = remove_data_file()
         self.set_phout_file(filename, data)
         data_frame = phout.parse_phout(filename)
 
@@ -481,3 +484,52 @@ quantile (%)  latency (mks)
                 ValueError,
                 match=r'Incorrect time values from_date > to_data'):
             phout.get_total_rps(data_frame)
+
+    @pytest.mark.positive
+    def test_count_uniq_by_field_check_result(self, remove_data_file):
+        """Check that get_http_reponses returns expected result"""
+
+        data = [
+            "1516295383.462	#10	4507	194	52	4248	13	4429	26697	391	0	200",
+            "1516295383.484	#11	4811	254	61	4475	21	4709	26697	390	0	400",
+            "1516295383.507	#12	4372	211	62	4083	16	4278	26697	390	0	500",
+            "1516295383.529	#13	1100000	0	62	1100000	0	1100000	26697	0	110	0",
+        ]
+        filename = remove_data_file()
+        self.set_phout_file(filename, data)
+        data_frame = phout.parse_phout(filename)
+        http_stats = phout.count_uniq_by_field(data_frame, 'proto_code')
+        assert http_stats['proto_code'].values.tolist() == [
+            '400', '500', '200', '0'
+        ], "unexpected proto_code values"
+        assert http_stats['count'].values.tolist() == [
+            1, 1, 1, 1
+        ], "unexpected count values"
+        assert http_stats['percent'].values.tolist() == [
+            25.00, 25.00, 25.00, 25.00
+        ], "unexpected count values"
+
+    @pytest.mark.positive
+    def test_print_http_reponses_check_output(self, capsys, remove_data_file):
+        """Check that print_http_reponses function prints in expected format"""
+
+        data = [
+            "1516295383.462	#10	4507	194	52	4248	13	4429	26697	391	0	200",
+            "1516295383.484	#11	4811	254	61	4475	21	4709	26697	390	0	400",
+            "1516295383.507	#12	4372	211	62	4083	16	4278	26697	390	0	500",
+            "1516295383.529	#13	1100000	0	62	1100000	0	1100000	26697	0	110	0",
+        ]
+        filename = remove_data_file()
+        self.set_phout_file(filename, data)
+        data_frame = phout.parse_phout(filename)
+        expected_output = u"""
+HTTP code  count  percent (%)
+     400      1         25.0
+     500      1         25.0
+     200      1         25.0
+       0      1         25.0
+"""
+        phout.print_http_reponses(data_frame)
+        out, err = capsys.readouterr()
+        assert out == expected_output, "unexpected output text"
+        assert err == "", "error is absent"

@@ -158,9 +158,6 @@ def print_quantiles(data_frame, field_name, quantile_list=None):
         data_frame (DataFrame): data
         filed_name (str): DataFrame column name
         quantiles (list): list of quantile values
-
-    Returns:
-        str: print list of counted quantiles line by line
     """
 
     quantiles = get_quantiles(data_frame, field_name, quantile_list)
@@ -214,3 +211,43 @@ def get_total_rps(data_frame):
         duration = 1
     requests_count = data_frame.shape[0]
     return requests_count/duration
+
+
+def count_uniq_by_field(data_frame, field):
+    """Count unique values for field
+
+    Args:
+        data_frame (DataFrame): data
+        field (str): field name
+
+    Returns:
+        list: Statistics for HTTP responses
+    """
+
+    http_stats = data_frame.proto_code.value_counts().\
+        rename_axis(field).reset_index(name='count')
+    percent = data_frame.proto_code.value_counts(normalize=True)\
+        * 100
+    http_stats['percent'] = percent.values
+    return http_stats
+
+
+def print_http_reponses(data_frame):
+    """Print stats for HTTP responses
+
+    Args:
+        data_frame (DataFrame): data
+    """
+
+    http_stats = count_uniq_by_field(data_frame, 'proto_code')
+    http_stats.rename(columns={'proto_code': 'HTTP code'}, inplace=True)
+    http_stats.rename(columns={'percent': 'percent (%)'}, inplace=True)
+    print(
+        "\n" + http_stats.to_string(
+            header=True,
+            index=False,
+            formatters={
+                'percent': '{:6.2f}'.format
+            }
+        )
+    )

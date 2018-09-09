@@ -49,6 +49,7 @@ def main():
 
     rps = phout.get_total_rps(data)
     print("\n\nTotal RPS: %.2f" % rps)
+    phout.print_http_reponses(data)
 
 
 if __name__ == '__main__':
