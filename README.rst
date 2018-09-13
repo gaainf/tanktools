@@ -83,7 +83,7 @@ Print median of latency
 .. code:: python
 
     data = phout.parse_phout('phout.log')
-    print data.latency.median()
+    print(data.latency.median())
 
 Get RPS
 *******
@@ -109,10 +109,10 @@ Print average request/response size
 
 .. code:: python
 
-    print "Avg. Request / Response: %d / %d bytes." % (
+    print("Avg. Request / Response: %d / %d bytes." % (
         data.size_in.astype(float).mean(),
         data.size_out.astype(float).mean()
-    )
+    ))
 
 .. note::
 
@@ -126,5 +126,5 @@ Print RPS at Nth request
     chunk_size = int(phout.size(data) / 2)
     for start in range(0, phout.size(data), chunk_size):
         data_subset = phout.subset(data, start, chunk_size)
-        print "RPS at request %s: %d" % \
-            (start + chunk_size, phout.get_total_rps(data_subset))
+        print("RPS at request %s: %d" %
+              (start + chunk_size, phout.get_total_rps(data_subset)))
