@@ -51,6 +51,23 @@ def main():
     print("\n\nTotal RPS: %.2f" % rps)
     phout.print_http_reponses(data)
 
+    http_responses = phout.count_uniq_by_field(data, 'proto_code')
+    for http_code in http_responses['proto_code']:
+        selected_http_responses = data[data.proto_code == http_code]
+        rps = phout.get_total_rps(selected_http_responses)
+        print("\n\nTotal RPS for %s: %.2f" % (http_code, rps))
+
+    print "\n\nAvg. Request / Response: %d / %d bytes." % (
+        data.size_in.astype(float).mean(),
+        data.size_out.astype(float).mean()
+    )
+
+    chunk_size = int(phout.size(data) / 2)
+    for start in range(0, phout.size(data), chunk_size):
+        data_subset = phout.subset(data, start, chunk_size)
+        print "\n\nRPS at request %s: %d" % \
+            (start + chunk_size, phout.get_total_rps(data_subset))
+
 
 if __name__ == '__main__':
     main()

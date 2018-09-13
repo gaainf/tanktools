@@ -289,6 +289,43 @@ class TestPhout(object):
             phout.parse_phout(filename)
 
     @pytest.mark.positive
+    def test_size_check_expected_result(
+            self, prepare_data_file):
+        """Check that size function returns expected result"""
+
+        data_frame = phout.parse_phout(prepare_data_file)
+        assert phout.size(data_frame) == 10, "unexpected size value"
+
+    @pytest.mark.positive
+    def test_subset_check_size(
+            self, prepare_data_file):
+        """Check that subset function returns dataframe
+        with expected size
+        """
+
+        data_frame = phout.parse_phout(prepare_data_file)
+        subset_data_frame = phout.subset(data_frame, 0, 5)
+
+        assert subset_data_frame.shape[0] == 5, \
+            "unexpected dataframe size value"
+
+        assert subset_data_frame['latency'].iloc[
+            0] == '5785', "unexpected the first element value"
+        assert subset_data_frame['latency'].iloc[
+            -1] == '5740', "unexpected the last element value"
+
+        data_frame = phout.parse_phout(prepare_data_file)
+        subset_data_frame = phout.subset(data_frame, 5, 10)
+
+        assert subset_data_frame.shape[0] == 5, \
+            "unexpected dataframe size value"
+
+        assert subset_data_frame['latency'].iloc[
+            0] == '4555', "unexpected the first element value"
+        assert subset_data_frame['latency'].iloc[
+            -1] == '4750', "unexpected the last element value"
+
+    @pytest.mark.positive
     def test_get_quantiles_check_default_quantile_list(
             self, prepare_data_file):
         """Check that get_quantiles function returns expected result
@@ -535,11 +572,11 @@ quantile (%)  latency (mks)
         self.set_phout_file(filename, data)
         data_frame = phout.parse_phout(filename)
         expected_output = u"""
-HTTP code  count  percent (%)
-     200      4         40.0
-     400      3         30.0
-     500      2         20.0
-       0      1         10.0
+HTTP code  count percent (%)
+     200      4       40.00
+     400      3       30.00
+     500      2       20.00
+       0      1       10.00
 """
         phout.print_http_reponses(data_frame)
         out, err = capsys.readouterr()

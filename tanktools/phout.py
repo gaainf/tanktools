@@ -128,6 +128,34 @@ def parse_phout(input_file, flags=None):
     return dataframe
 
 
+def size(data_frame):
+    """Get DataFrame rows count
+
+    Args:
+        data_frame (DataFrame): data
+
+    Returns:
+        int: rows count
+    """
+
+    return data_frame.shape[0]
+
+
+def subset(data_frame, start, offset):
+    """Get DataFrame rows from start to start + offset
+
+    Args:
+        data_frame (DataFrame): data
+        start (int): start row index
+        offset (int): offset
+
+    Returns:
+        DataFrame: DataFrame subset
+    """
+
+    return data_frame.iloc[start:start + offset]
+
+
 def get_quantiles(data_frame, field_name, quantile_list=None):
     """Get quantiles for specific field
 
@@ -247,7 +275,7 @@ def print_http_reponses(data_frame):
             header=True,
             index=False,
             formatters={
-                'percent': '{:6.2f}'.format
+                'percent (%)': '{:6.2f}'.format
             }
         )
     )
