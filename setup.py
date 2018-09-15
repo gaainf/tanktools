@@ -46,7 +46,7 @@ setup(
     author='Alexander Grechin',
     author_email='infinum@mail.ru',
     download_url='https://github.com/gaainf/tanktools',
-    url='',
+    url='https://github.com/gaainf/tanktools',
     license='BSD-3-Clause',
     install_requires=REQUIRES,
     setup_requires=SETUP_REQUIRES,
@@ -63,5 +63,7 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Topic :: Software Development',
         'Topic :: Utilities',
+        'Topic :: Load Testing',
+        'Topic :: Yandextank'
     ],
 )
