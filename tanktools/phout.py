@@ -124,12 +124,35 @@ def parse_phout(input_file, flags=None):
         index = index + 1
         if stop_criteria(index, elems[0], flags):
             break
-    dataframe = pd.DataFrame(data, columns=PHOUT_FIELDS)
-    return dataframe
+    data_frame = pd.DataFrame(data, columns=PHOUT_FIELDS)
+    data_frame[[
+        'interval_real',
+        'connect_time',
+        'send_time',
+        'latency',
+        'receive_time',
+        'interval_event',
+        'size_out',
+        'size_in',
+        'net_code',
+        'proto_code'
+    ]] = data_frame[[
+        'interval_real',
+        'connect_time',
+        'send_time',
+        'latency',
+        'receive_time',
+        'interval_event',
+        'size_out',
+        'size_in',
+        'net_code',
+        'proto_code'
+    ]].astype(int)
+    return data_frame
 
 
 def size(data_frame):
-    """Get DataFrame rows count
+    """Get rows count
 
     Args:
         data_frame (DataFrame): data
@@ -142,7 +165,7 @@ def size(data_frame):
 
 
 def subset(data_frame, start, offset):
-    """Get DataFrame rows from start to start + offset
+    """Get rows from start to start + offset
 
     Args:
         data_frame (DataFrame): data
@@ -150,7 +173,7 @@ def subset(data_frame, start, offset):
         offset (int): offset
 
     Returns:
-        DataFrame: DataFrame subset
+        DataFrame: data_frame subset
     """
 
     return data_frame.iloc[start:start + offset]
@@ -161,7 +184,7 @@ def get_quantiles(data_frame, field_name, quantile_list=None):
 
     Args:
         data_frame (DataFrame): data
-        filed_name (str): DataFrame column name
+        field_name (str): data_frame column name
         quantile_list (list): list of quantile values
 
     Returns:
@@ -184,7 +207,7 @@ def print_quantiles(data_frame, field_name, quantile_list=None):
 
     Args:
         data_frame (DataFrame): data
-        filed_name (str): DataFrame column name
+        field_name (str): data_frame column name
         quantiles (list): list of quantile values
     """
 
@@ -217,8 +240,8 @@ def print_quantiles(data_frame, field_name, quantile_list=None):
     )
 
 
-def get_total_rps(data_frame):
-    """Calculate RPS for all requests in DataFrame
+def get_rps(data_frame):
+    """Calculate RPS for all requests
 
     Args:
         data_frame (DataFrame): data
@@ -271,7 +294,7 @@ def print_http_reponses(data_frame):
     http_stats.rename(columns={'proto_code': 'HTTP code'}, inplace=True)
     http_stats.rename(columns={'percent': 'percent (%)'}, inplace=True)
     print(
-        "\n" + http_stats.to_string(
+        http_stats.to_string(
             header=True,
             index=False,
             formatters={

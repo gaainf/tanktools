@@ -39,11 +39,21 @@ Examples
 Select DataFrame by timestamp
 *****************************
 
+It is possible to parse a part of staistics by time and overal count
+
 .. code:: python
 
-    flags['from_date'] = '2018-01-18 20:09:50.123'
-    flags['to_date'] = '2018-01-18 20:10:00.456'
+    flags = {
+        'from_date': '2018-01-18 20:09:50.123',
+        'to_date'  : '2018-01-18 20:10:00.456',
+        'limit': 100
+    }
     data = phout.parse_phout(args.input, flags)
+    print("Total count: %d" % phout.size(data))
+
+.. code::
+
+    Total count: 100
 
 Print percentiles
 *****************
@@ -75,15 +85,20 @@ Print percentiles
 
 .. note::
 
-    Pay attention, any timings are calculated in microseconds.
+    Pay attention, timings are calculated in microseconds.
 
-Print median of latency
-***********************
+Print latency median
+************************
 
 .. code:: python
 
     data = phout.parse_phout('phout.log')
-    print(data.latency.median())
+    # Convert and print timing in milliseconds
+    print("\n\nLA median: %d ms" % int(data.latency.median() / 1000))
+
+.. code::
+
+    LA median: 30 ms
 
 Get RPS
 *******
@@ -91,28 +106,51 @@ Get RPS
 .. code:: python
 
     data = phout.parse_phout('phout.log')
-    rps = phout.get_total_rps(data)
+    rps = phout.get_rps(data)
 
+Print HTTP responses statistics
+*******************************
 
-Select 200 OK status codes and calculate RPS
-********************************************
+.. code:: python
+
+    data = phout.parse_phout('phout.log')
+    phout.print_http_reponses(data)
+
+.. code::
+
+    HTTP code   count  percent (%)
+         500   83429        56.38
+         200   61558        41.60
+         502    2944         1.99
+           0      41         0.03
+
+Select 200 OK responses and print latency median
+************************************************
 
 .. code:: python
 
     data = phout.parse_phout('phout.log')
     selected_http_responses = data[data.proto_code == 200]
-    rps = phout.get_total_rps(selected_http_responses)
-    print("\n\nTotal RPS for %s: %.2f" % (200 OK, rps))
+    print("Latency median for 200 OK: %d" %
+          selected_http_responses.latency.median())
+
+.. code::
+
+    Latency median for 200 OK: 3539
 
 Print average request/response size
 ***********************************
 
 .. code:: python
 
-    print("Avg. Request / Response: %d / %d bytes." % (
+    print("Avg. Request / Response: %d / %d bytes" % (
         data.size_in.astype(float).mean(),
         data.size_out.astype(float).mean()
     ))
+
+.. code::
+
+    Avg. Request / Response: 364 / 26697 bytes
 
 .. note::
 
@@ -123,8 +161,15 @@ Print RPS at Nth request
 
 .. code:: python
 
+    print("RPS at request:")
     chunk_size = int(phout.size(data) / 2)
     for start in range(0, phout.size(data), chunk_size):
         data_subset = phout.subset(data, start, chunk_size)
-        print("RPS at request %s: %d" %
-              (start + chunk_size, phout.get_total_rps(data_subset)))
+        print("\t%s: %.2f" %
+              (start + chunk_size, phout.get_rps(data_subset)))
+
+.. code::
+
+    RPS at request:
+        73986: 2062.50
+        147972: 2530.56

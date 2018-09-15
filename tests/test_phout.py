@@ -199,9 +199,9 @@ class TestPhout(object):
         result = phout.parse_phout(prepare_data_file, flags)
         assert result.shape[0] == 9, "unexpected rows count"
         assert result['latency'].iloc[
-            0] == '5315', "unexpected the first element value"
+            0] == 5315, "unexpected the first element value"
         assert result['latency'].iloc[
-            -1] == '4750', "unexpected the last element value"
+            -1] == 4750, "unexpected the last element value"
 
     @pytest.mark.positive
     def test_parse_phout_to_date_flag(self, prepare_data_file):
@@ -211,9 +211,9 @@ class TestPhout(object):
         result = phout.parse_phout(prepare_data_file, flags)
         assert result.shape[0] == 9, "unexpected rows count"
         assert result['latency'].iloc[
-            0] == '5785', "unexpected the first element value"
+            0] == 5785, "unexpected the first element value"
         assert result['latency'].iloc[
-            -1] == '4500', "unexpected the last element value"
+            -1] == 4500, "unexpected the last element value"
 
     @pytest.mark.positive
     def test_parse_phout_limit_flag(self, prepare_data_file):
@@ -223,9 +223,9 @@ class TestPhout(object):
         result = phout.parse_phout(prepare_data_file, flags)
         assert result.shape[0] == 1, "unexpected rows count"
         assert result['latency'].iloc[
-            0] == '5785', "unexpected the first element value"
+            0] == 5785, "unexpected the first element value"
         assert result['latency'].iloc[
-            -1] == '5785', "unexpected the last element value"
+            -1] == 5785, "unexpected the last element value"
 
     @pytest.mark.negative
     def test_parse_phout_empty_lines_at_the_end(self, remove_data_file):
@@ -310,9 +310,9 @@ class TestPhout(object):
             "unexpected dataframe size value"
 
         assert subset_data_frame['latency'].iloc[
-            0] == '5785', "unexpected the first element value"
+            0] == 5785, "unexpected the first element value"
         assert subset_data_frame['latency'].iloc[
-            -1] == '5740', "unexpected the last element value"
+            -1] == 5740, "unexpected the last element value"
 
         data_frame = phout.parse_phout(prepare_data_file)
         subset_data_frame = phout.subset(data_frame, 5, 10)
@@ -321,9 +321,9 @@ class TestPhout(object):
             "unexpected dataframe size value"
 
         assert subset_data_frame['latency'].iloc[
-            0] == '4555', "unexpected the first element value"
+            0] == 4555, "unexpected the first element value"
         assert subset_data_frame['latency'].iloc[
-            -1] == '4750', "unexpected the last element value"
+            -1] == 4750, "unexpected the last element value"
 
     @pytest.mark.positive
     def test_get_quantiles_check_default_quantile_list(
@@ -454,16 +454,16 @@ quantile (%)  latency (mks)
         assert err == "", "error is absent"
 
     @pytest.mark.positive
-    def test_get_total_rps_check_duration_less_then_one_second(
+    def test_get_rps_check_duration_less_then_one_second(
             self, prepare_data_file):
         """Check that RPS is calculated correctly for duration < 1 second"""
 
         data_frame = phout.parse_phout(prepare_data_file)
-        rps = phout.get_total_rps(data_frame)
+        rps = phout.get_rps(data_frame)
         assert round(rps, 2) == 22.08, "unexpected total RPS value"
 
     @pytest.mark.positive
-    def test_get_total_rps_check_duration_greater_then_one_second(
+    def test_get_rps_check_duration_greater_then_one_second(
             self, remove_data_file):
         """Check that RPS is calculated correctly for duration > 1 second"""
 
@@ -485,11 +485,11 @@ quantile (%)  latency (mks)
         filename = remove_data_file()
         self.set_phout_file(filename, data)
         data_frame = phout.parse_phout(filename)
-        rps = phout.get_total_rps(data_frame)
+        rps = phout.get_rps(data_frame)
         assert round(rps, 2) == 20.47, "unexpected total RPS value"
 
     @pytest.mark.negative
-    def test_get_total_rps_check_duration_equals_zero(self, remove_data_file):
+    def test_get_rps_check_duration_equals_zero(self, remove_data_file):
         """Check that RPS is calculated correctly for duration = 0 second"""
 
         data = [
@@ -499,11 +499,11 @@ quantile (%)  latency (mks)
         filename = remove_data_file()
         self.set_phout_file(filename, data)
         data_frame = phout.parse_phout(filename)
-        rps = phout.get_total_rps(data_frame)
+        rps = phout.get_rps(data_frame)
         assert rps == 2, "unexpected total RPS value"
 
     @pytest.mark.negative
-    def test_get_total_rps_check_incorrect_time(self, remove_data_file):
+    def test_get_rps_check_incorrect_time(self, remove_data_file):
         """Check that get_quantiles function returns expected result
         for latency field
         """
@@ -520,7 +520,7 @@ quantile (%)  latency (mks)
         with pytest.raises(
                 ValueError,
                 match=r'Incorrect time values from_date > to_data'):
-            phout.get_total_rps(data_frame)
+            phout.get_rps(data_frame)
 
     @pytest.mark.positive
     def test_count_uniq_by_field_check_result(self, remove_data_file):
@@ -543,7 +543,7 @@ quantile (%)  latency (mks)
         data_frame = phout.parse_phout(filename)
         http_stats = phout.count_uniq_by_field(data_frame, 'proto_code')
         assert http_stats['proto_code'].values.tolist() == [
-            '200', '400', '500', '0'
+            200, 400, 500, 0
         ], "unexpected proto_code values"
         assert http_stats['count'].values.tolist() == [
             4, 3, 2, 1
@@ -571,12 +571,11 @@ quantile (%)  latency (mks)
         filename = remove_data_file()
         self.set_phout_file(filename, data)
         data_frame = phout.parse_phout(filename)
-        expected_output = u"""
-HTTP code  count percent (%)
-     200      4       40.00
-     400      3       30.00
-     500      2       20.00
-       0      1       10.00
+        expected_output = u"""HTTP code  count percent (%)
+      200      4       40.00
+      400      3       30.00
+      500      2       20.00
+        0      1       10.00
 """
         phout.print_http_reponses(data_frame)
         out, err = capsys.readouterr()

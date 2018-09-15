@@ -43,30 +43,36 @@ def main():
         0.98, 0.99, 0.995, 1.0
     ]
     data = phout.parse_phout(args.input, flags)
-    phout.print_quantiles(data, 'receive_time', quantile_list)
-    phout.print_quantiles(data, 'latency', quantile_list)
     phout.print_quantiles(data, 'interval_real', quantile_list)
 
-    rps = phout.get_total_rps(data)
-    print("\n\nTotal RPS: %.2f" % rps)
+    print("\n\n")
     phout.print_http_reponses(data)
 
+    print("\n\nTotal Latency median: %d" % int(data.latency.median()))
+
+    print("\n\nLatency median for:")
     http_responses = phout.count_uniq_by_field(data, 'proto_code')
     for http_code in http_responses['proto_code']:
         selected_http_responses = data[data.proto_code == http_code]
-        rps = phout.get_total_rps(selected_http_responses)
-        print("\n\nTotal RPS for %s: %.2f" % (http_code, rps))
+        print("\t%s: %d" % (
+            http_code,
+            selected_http_responses.latency.median()
+        ))
 
-    print("\n\nAvg. Request / Response: %d / %d bytes." % (
+    print("\n\nAvg. Request / Response: %d / %d bytes" % (
         data.size_in.astype(float).mean(),
         data.size_out.astype(float).mean()
     ))
 
+    rps = phout.get_rps(data)
+    print("\n\nTotal RPS: %.2f" % rps)
+
+    print("\n\nRPS at request:")
     chunk_size = int(phout.size(data) / 2)
     for start in range(0, phout.size(data), chunk_size):
         data_subset = phout.subset(data, start, chunk_size)
-        print("\n\nRPS at request %s: %d" %
-              (start + chunk_size, phout.get_total_rps(data_subset)))
+        print("\t%s: %.2f" %
+              (start + chunk_size, phout.get_rps(data_subset)))
 
 
 if __name__ == '__main__':
