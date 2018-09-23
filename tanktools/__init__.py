@@ -8,4 +8,7 @@
 #
 """Global constants"""
 
-__version__ = '1.0.0'
+__author__ = 'Alexander Grechin'
+__author_email__ = 'infinum@mail.ru'
+__license__ = 'BSD'
+__version__ = '1.0.2'

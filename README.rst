@@ -8,21 +8,32 @@ Yandex-tank output file parser
 .. image:: https://codecov.io/gh/gaainf/tanktools/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/gaainf/tanktools/
 
-Yandex-tank prepare phout file with statistics after load test.
+Yandex-tank prepare phout file with statistics after load testing.
 **tanktools** module helps to parse such files and convert to DataFrame.
 You can use **pandas** module in manual mode to handle DataFrame
-or use build-in `phout` functions.
+or use build-in functions.
 
 So you can:
 
 - calc quantiles
 
-- get information about timings, LA, receive_time
+- get information about timings, latency, status codes
 
-- extract data by timestamp and other columns
+- extract requests by timestamp, tag and other columns
 
 - group and analyze specific data like total/partial RPS,
-  Avg. Request/Response size
+  average request/response size
+
+- calc statistical metrics
+
+
+************
+Installation
+************
+.. code:: python
+
+    pip install tanktools
+
 
 ******
 Import
@@ -31,10 +42,10 @@ Import
 
     from tanktools import phout
 
+
 ********
 Examples
 ********
-
 
 Select DataFrame by timestamp
 *****************************
@@ -94,11 +105,11 @@ Print latency median
 
     data = phout.parse_phout('phout.log')
     # Convert and print timing in milliseconds
-    print("\n\nLA median: %d ms" % int(data.latency.median() / 1000))
+    print("\n\nLatency median: %d ms" % int(data.latency.median() / 1000))
 
 .. code::
 
-    LA median: 30 ms
+    Latency median: 30 ms
 
 Get RPS
 *******
@@ -108,7 +119,7 @@ Get RPS
     data = phout.parse_phout('phout.log')
     rps = phout.get_rps(data)
 
-Print HTTP responses statistics
+Print HTTP response statistics
 *******************************
 
 .. code:: python

@@ -9,48 +9,44 @@
 
 """Setup module"""
 
-import re
-from os.path import join, dirname
 from setuptools import setup, find_packages
-# import tanktools
-
-with open(join(dirname(__file__), 'tanktools', '__init__.py'), 'r') as f:
-    VERSION_INFO = re.match(r".*__version__ = '(.*?)'",
-                            f.read(), re.S).group(1)
 
 with open('README.rst') as f:
-    LONG_README = f.read()
+    long_readme = f.read()
 
-SETUP_REQUIRES = [
+setup_requires = [
     "pytest-runner",
 ]
 
-REQUIRES = [
+requires = [
     'python-dateutil>=2.5.0',
     'pandas>=0.23.4',
     'flake8>=3.5.0',
 ]
 
-TEST_REQUIRES = [
+test_requires = [
     'pytest>=2.7',
     'pytest-cov>=2.6.0',
 ]
 
+package_name = 'tanktools'
+package = __import__(package_name)
+
 setup(
-    name='tanktools',
-    version=VERSION_INFO,
+    name=package_name,
+    version=package.__version__,
     packages=find_packages(exclude=('tests', 'docs')),
     description='Yandex-tank tools',
-    long_description=LONG_README,
+    long_description=long_readme,
     keywords='yandextank yandex-tank statistics tools utilities',
-    author='Alexander Grechin',
-    author_email='infinum@mail.ru',
+    author=package.__author__,
+    author_email=package.__author_email__,
     download_url='https://github.com/gaainf/tanktools',
     url='https://github.com/gaainf/tanktools',
     license='BSD-3-Clause',
-    install_requires=REQUIRES,
-    setup_requires=SETUP_REQUIRES,
-    tests_require=TEST_REQUIRES,
+    install_requires=requires,
+    setup_requires=setup_requires,
+    tests_require=test_requires,
     test_suite='tests',
     classifiers=[
         'Development Status :: 4 - Beta',
