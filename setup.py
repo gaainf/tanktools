@@ -53,7 +53,7 @@ setup(
     tests_require=TEST_REQUIRES,
     test_suite='tests',
     classifiers=[
-        'Development Status :: 1 - Beta',
+        'Development Status :: 4 - Beta',
         'Operating System :: OS Independent',
         'Environment :: Console',
         'Intended Audience :: Developers',
@@ -62,8 +62,6 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Topic :: Software Development',
-        'Topic :: Utilities',
-        'Topic :: Load Testing',
-        'Topic :: Yandextank'
+        'Topic :: Utilities'
     ],
 )
