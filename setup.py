@@ -10,43 +10,51 @@
 """Setup module"""
 
 from setuptools import setup, find_packages
+import re
+from os.path import join, dirname
 
 with open('README.rst') as f:
     long_readme = f.read()
 
-setup_requires = [
-    "pytest-runner",
-]
+setuptools_kwargs = {
+    'install_requires': [
+        'python-dateutil>=2.5.0',
+        'pandas>=0.23.4',
+        'flake8>=3.5.0',
+        'pcaper>=1.0.2'
+    ],
+    'setup_requires': 'pytest-runner',
+    'tests_require': [
+        'pytest>=2.7',
+        'pytest-cov>=2.6.0',
+        'mock>=2.0.0'
+    ],
+    'entry_points': {
+        'console_scripts': [
+            'pcap2ammo=tanktools.pcap2ammo:main'
+        ],
+    },
+}
 
-requires = [
-    'python-dateutil>=2.5.0',
-    'pandas>=0.23.4',
-    'flake8>=3.5.0',
-]
-
-test_requires = [
-    'pytest>=2.7',
-    'pytest-cov>=2.6.0',
-]
-
-package_name = 'tanktools'
-package = __import__(package_name)
+PACKAGE_NAME = 'tanktools'
+AUTHOR = 'Alexander Grechin'
+AUTHOR_EMAIL = 'infinum@mail.ru'
+LICENSE = 'BSD'
+with open(join(dirname(__file__), PACKAGE_NAME, '_version.py'), 'r') as f:
+    VERSION = re.match(r".*__version__ = '(.*?)'", f.read(), re.S).group(1)
 
 setup(
-    name=package_name,
-    version=package.__version__,
+    name=PACKAGE_NAME,
+    version=VERSION,
     packages=find_packages(exclude=('tests', 'docs')),
     description='Yandex-tank tools',
     long_description=long_readme,
     keywords='yandextank yandex-tank statistics tools utilities',
-    author=package.__author__,
-    author_email=package.__author_email__,
+    author=AUTHOR,
+    author_email=AUTHOR_EMAIL,
     download_url='https://github.com/gaainf/tanktools',
     url='https://github.com/gaainf/tanktools',
     license='BSD-3-Clause',
-    install_requires=requires,
-    setup_requires=setup_requires,
-    tests_require=test_requires,
     test_suite='tests',
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -60,4 +68,5 @@ setup(
         'Topic :: Software Development',
         'Topic :: Utilities'
     ],
+    **setuptools_kwargs
 )
