@@ -13,6 +13,12 @@ Yandex-tank prepare phout file with statistics after load testing.
 You can use **pandas** module in manual mode to handle DataFrame
 or use build-in functions.
 
+From version 1.0.3 `pcap2ammo` script added to convert pcap file
+to Yandex-tank ammo format.
+After the package installation it should be available from your
+system bin directory. A request from pcap file is extracted completely
+with line breackers headers and body.
+
 So you can:
 
 - calc quantiles
@@ -25,6 +31,10 @@ So you can:
   average request/response size
 
 - calc statistical metrics
+
+- convert pcap file to ammo
+
+- filter out and modify requests
 
 
 ************
@@ -184,3 +194,64 @@ Print RPS at Nth request
     RPS at request:
         73986: 2062.50
         147972: 2530.56
+
+
+*********
+pcap2ammo
+*********
+
+Convert pcap file to Yandex-tank ammo
+*************************************
+
+.. code:: bash
+
+    pcap2ammo -i file.pcap
+
+.. code::
+
+    73
+    GET https://rambler.ru/ HTTP/1.1\r\n
+    Host: rambler.ru\r\n
+    Content-Length: 0\r\n\r\n
+
+Print to file
+*************************************
+
+.. code:: bash
+
+    pcap2ammo -i file.pcap -o out.ammo
+
+Add or delete headers
+*********************
+Applyed for all requests, contaning specified headers
+
+.. code:: bash
+
+    pcap2ammo -i file.pcap --add-header 'Referer: http://domain.com' --add-header 'X-Ip: 1.1.1.1'
+
+.. code:: bash
+
+    pcap2ammo -i file.pcap --delete-header 'Content-Length'
+
+Filter TCP/IP packets
+*********************
+
+.. code:: bash
+
+    pcap2ammo -i file.pcap -f 'ip.src==10.10.10.10 and tcp.dport==8080'
+
+See more filters in `pcaper <https://github.com/gaainf/pcaper/>`_ package description.
+
+
+Print statistics about counted requests
+***************************************
+
+.. code:: bash
+
+    pcap2ammo -f "ip.src == 10.10.10.10" -i file.pcap -S
+
+    Stats:
+        total: 1
+        complete: 1
+        incorrect: 0
+        incomplete: 0

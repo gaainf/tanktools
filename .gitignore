@@ -3,3 +3,7 @@ __pycache__
 .pytest_cache
 .coverage
 coverage.xml
+.eggs
+build/
+dist/
+*.egg-info/
