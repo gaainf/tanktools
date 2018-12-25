@@ -214,6 +214,19 @@ Convert pcap file to Yandex-tank ammo
     Host: rambler.ru\r\n
     Content-Length: 0\r\n\r\n
 
+Count statistics about HTTP requests
+***************************************
+
+.. code:: bash
+
+    pcap2ammo -f "ip.src == 10.10.10.10" -i file.pcap -S
+
+    Stats:
+        total: 1
+        complete: 1
+        incorrect: 0
+        incomplete: 0
+
 Print to file
 *************************************
 
@@ -223,7 +236,7 @@ Print to file
 
 Add or delete headers
 *********************
-Applyed for all requests, contaning specified headers
+Applyed for all requests, containing specified headers
 
 .. code:: bash
 
@@ -267,16 +280,3 @@ Use excluding filters also
     pcap2ammo -i file.pcap -F '"rambler.ru" in http["uri"]' -E '"dsp-rambler.ru" in http["uri"]'
 
 See more information about filters in `pcaper <https://github.com/gaainf/pcaper/>`_ package description.
-
-Print statistics about counted requests
-***************************************
-
-.. code:: bash
-
-    pcap2ammo -f "ip.src == 10.10.10.10" -i file.pcap -S
-
-    Stats:
-        total: 1
-        complete: 1
-        incorrect: 0
-        incomplete: 0
