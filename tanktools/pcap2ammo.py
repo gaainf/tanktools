@@ -31,7 +31,10 @@ def parse_args():
         '-i', '--input', help='the pcap file to parse', required=True
     )
     parser.add_argument('-o', '--output', help='output ammo file')
-    parser.add_argument('-f', '--filter', help='pcap filter')
+    parser.add_argument('-f', '--filter', help='tcp/ip filter')
+    parser.add_argument('-F', '--http-filter', help='http filter')
+    parser.add_argument('-e', '--exfilter', help='exclude tcp/ip filter')
+    parser.add_argument('-E', '--http-exfilter', help='exclude http filter')
     parser.add_argument(
         '-S', '--stats-only', help='print stats only', action='store_true'
     )
@@ -75,15 +78,25 @@ def pcap2ammo(args):
             print("\t%s: %d" % (key, stats[key]))
     else:
         for request in reader.read_pcap(args):
-            if 'delete_header' in args:
+            if 'http_filter' in args and args['http_filter'] and \
+                    not http_filter(request, args['http_filter']):
+                continue
+            if 'http_exfilter' in args and args['http_exfilter'] and \
+                    http_filter(request, args['http_exfilter']):
+                continue
+            if 'delete_header' in args and args['delete_header']:
                 delete_headers(request, args['delete_header'])
-            if 'add_header' in args:
+            if 'add_header' in args and args['add_header']:
                 add_headers(request, args['add_header'])
             file_handler.write(make_ammo(request['origin']))
     if args['output']:
         file_handler.close()
 
     return 0
+
+
+def http_filter(http, filter_string):
+    return eval(filter_string)
 
 
 def delete_headers(request, headers):

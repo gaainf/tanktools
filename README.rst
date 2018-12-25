@@ -232,6 +232,7 @@ Applyed for all requests, contaning specified headers
 .. code:: bash
 
     pcap2ammo -i file.pcap --delete-header 'Content-Length'
+    pcap2ammo -i file.pcap --delete-header 'Connection' --add-header 'Connection: keep-alive'
 
 Filter TCP/IP packets
 *********************
@@ -255,3 +256,30 @@ Print statistics about counted requests
         complete: 1
         incorrect: 0
         incomplete: 0
+
+Filter HTTP packets
+*********************
+
+.. code:: bash
+
+    pcap2ammo -i file.pcap -F '"rambler.ru" in http["uri"]'
+
+You can use logical expressions in filters
+
+.. code:: bash
+
+    pcap2ammo -i file.pcap -F '"keep-alive" in http["headers"]["connection"] or "Keep-alive" in http["headers"]["connection"]'
+
+String functions over HTTP headers
+
+.. code:: bash
+
+    pcap2ammo -i file.pcap -F '"keep-alive" in http["headers"]["connection"].lower()'
+
+Use excluding filters also
+
+.. code:: bash
+
+    pcap2ammo -i file.pcap -F '"rambler.ru" in http["uri"]' -E '"dsp-rambler.ru" in http["uri"]'
+
+See more information about filters in `pcaper <https://github.com/gaainf/pcaper/>`_ package description.
