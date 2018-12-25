@@ -1,6 +1,6 @@
-==============================
-Yandex-tank output file parser
-==============================
+====================================
+Yandex-tank input/output file parser
+====================================
 
 .. image:: https://travis-ci.org/travis-ci/travis-web.svg?branch=master
     :target: https://travis-ci.org/travis-ci/travis-web
@@ -8,16 +8,16 @@ Yandex-tank output file parser
 .. image:: https://codecov.io/gh/gaainf/tanktools/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/gaainf/tanktools/
 
-Yandex-tank prepare phout file with statistics after load testing.
+Yandex-tank prepare `phout` file with statistics after load testing.
 **tanktools** module helps to parse such files and convert to DataFrame.
 You can use **pandas** module in manual mode to handle DataFrame
 or use build-in functions.
 
-From version 1.0.3 `pcap2ammo` script added to convert pcap file
-to Yandex-tank ammo format.
-After the package installation it should be available from your
-system bin directory. A request from pcap file is extracted completely
-with line breackers headers and body.
+To convert pcap file to Yandex-tank ammo format `pcap2ammo` tool was added.
+It should be available in your system bin directory right after the package
+installation.
+HTTP request from pcap file is extracted completely with line
+breackers headers and body.
 
 So you can:
 
