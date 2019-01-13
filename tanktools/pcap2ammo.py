@@ -31,10 +31,8 @@ def parse_args():
         '-i', '--input', help='the pcap file to parse', required=True
     )
     parser.add_argument('-o', '--output', help='output ammo file')
-    parser.add_argument('-f', '--filter', help='tcp/ip filter')
-    parser.add_argument('-F', '--http-filter', help='http filter')
-    parser.add_argument('-e', '--exfilter', help='exclude tcp/ip filter')
-    parser.add_argument('-E', '--http-exfilter', help='exclude http filter')
+    parser.add_argument('-f', '--filter', help='TCP/IP filter')
+    parser.add_argument('-F', '--http-filter', help='HTTP filter')
     parser.add_argument(
         '-S', '--stats-only', help='print stats only', action='store_true'
     )
@@ -78,45 +76,35 @@ def pcap2ammo(args):
             print("\t%s: %d" % (key, stats[key]))
     else:
         for request in reader.read_pcap(args):
-            if 'http_filter' in args and args['http_filter'] and \
-                    not http_filter(request, args['http_filter']):
-                continue
-            if 'http_exfilter' in args and args['http_exfilter'] and \
-                    http_filter(request, args['http_exfilter']):
-                continue
             if 'delete_header' in args and args['delete_header']:
                 delete_headers(request, args['delete_header'])
             if 'add_header' in args and args['add_header']:
                 add_headers(request, args['add_header'])
-            file_handler.write(make_ammo(request['origin']))
+            file_handler.write(make_ammo(request.origin))
     if args['output']:
         file_handler.close()
 
     return 0
 
 
-def http_filter(http, filter_string):
-    return eval(filter_string)
-
-
 def delete_headers(request, headers):
     """Delete headers from http packet
 
     Args:
-        request (dict): HTTP request
-        headers (list): headers to be deleted
+        request (dpkt.http.Request): HTTP request
+        headers (list): headers to be added
 
     Returns:
-        dict: modified HTTP reqquest
+        dpkt.http.Request: modified HTTP reqquest
     """
 
     for header in headers:
-        if header.lower() in request['headers']:
-            request['origin'] = re.sub(
+        if header.lower() in request.headers:
+            request.origin = re.sub(
                 '^' + header + ".+?\r\n",
-                '', request['origin'],
+                '', request.origin,
                 flags=re.IGNORECASE | re.MULTILINE)
-            del request['headers'][header.lower()]
+            del request.headers[header.lower()]
     return request
 
 
@@ -125,22 +113,22 @@ def add_headers(request, headers):
        Parameter will be added if header is absent in original request.
 
     Args:
-        request (dict): HTTP request
+        request (dpkt.http.Request): HTTP request
         headers (list): headers to be added
 
     Returns:
-        dict: modified HTTP reqquest
+        dpkt.http.Request: modified HTTP reqquest
     """
 
     for header in headers:
         arr = re.split(r": *", header, 1)
         if len(arr) == 2:
-            if arr[0].lower() not in request['headers']:
-                request['origin'] = re.sub(
+            if arr[0].lower() not in request.headers:
+                request.origin = re.sub(
                     "\r\n\r\n",
-                    "\r\n" + header + "\r\n\r\n", request['origin'],
+                    "\r\n" + header + "\r\n\r\n", request.origin,
                     re.MULTILINE)
-                request['headers'][header.lower()] = header
+                request.headers[header.lower()] = header
         else:
             raise ValueError("Wrong header format, " +
                              "expected \"<header_name>: <header_value>\"")

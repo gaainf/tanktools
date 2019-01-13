@@ -299,9 +299,7 @@ class TestParseHttp(object):
             'add_header': [],
             'delete_header': ['content-length'],
             'filter': None,
-            'exfilter': None,
             'http_filter': None,
-            'http_exfilter': None
         })
         captured = capsys.readouterr()
         assert captured.out == \
@@ -342,9 +340,7 @@ class TestParseHttp(object):
             'add_header': [],
             'delete_header': [],
             'filter': 'ip.src == 10.4.0.136',
-            'exfilter': None,
-            'http_filter': None,
-            'http_exfilter': None
+            'http_filter': None
         })
         captured = capsys.readouterr()
         assert captured.out == \
@@ -359,20 +355,19 @@ class TestParseHttp(object):
             'add_header': [],
             'delete_header': [],
             'filter': 'ip.src == 10.4.1.136',
-            'exfilter': None,
             'http_filter': None,
-            'http_exfilter': None
         })
         captured = capsys.readouterr()
         assert captured.out == "", "unexpected output"
 
     @pytest.mark.positive
-    def test_pcap2ammo_exfilter(
+    def test_pcap2ammo_excluding_filter(
         self,
         prepare_data_file,
         capsys
     ):
-        """Check main function parse input file with filter correctly"""
+        """Check main function parse input file
+        with excluding filter correctly"""
 
         http_request = "GET https://rambler.ru/ HTTP/1.1\r\n" + \
                        "Host: rambler.ru\r\n" + \
@@ -400,16 +395,14 @@ class TestParseHttp(object):
             'add_header': [],
             'delete_header': [],
             'filter': None,
-            'exfilter': 'ip.src == 10.4.1.136',
-            'http_filter': None,
-            'http_exfilter': None
+            'http_filter': '"rambler" in http.uri',
         })
         captured = capsys.readouterr()
         assert captured.out == \
             str(len(http_request)) + " \n" + \
             http_request, "unexpected output"
 
-        # exfilter
+        # excluding filter
         pcap2ammo.pcap2ammo({
             'input': filename,
             'output': False,
@@ -417,9 +410,7 @@ class TestParseHttp(object):
             'add_header': [],
             'delete_header': [],
             'filter': None,
-            'exfilter': 'ip.src == 10.4.0.136',
-            'http_filter': None,
-            'http_exfilter': None
+            'http_filter': '"rambler" not in http.uri'
         })
         captured = capsys.readouterr()
         assert captured.out == "", "unexpected output"
@@ -449,9 +440,7 @@ class TestParseHttp(object):
             'add_header': [],
             'delete_header': [],
             'filter': None,
-            'exfilter': None,
-            'http_filter': None,
-            'http_exfilter': None
+            'http_filter': None
         })
         captured = capsys.readouterr()
         assert captured.out == "", "output is not empty"
@@ -469,7 +458,7 @@ class TestParseHttp(object):
     ):
         """Check main function parse input file with filter correctly"""
 
-        http_request = "GET https://rambler.ru/ HTTP/1.1\r\n" + \
+        http_request = "GET / HTTP/1.1\r\n" + \
                        "Host: rambler.ru\r\n" + \
                        "Content-Length: 0\r\n\r\n"
         params = {
@@ -495,9 +484,7 @@ class TestParseHttp(object):
             'add_header': [],
             'delete_header': [],
             'filter': None,
-            'exfilter': None,
-            'http_filter': '"rambler.ru" in http["uri"]',
-            'http_exfilter': None
+            'http_filter': '"rambler.ru" == http.headers["host"]'
         })
         captured = capsys.readouterr()
         assert captured.out == \
@@ -512,67 +499,7 @@ class TestParseHttp(object):
             'add_header': [],
             'delete_header': [],
             'filter': None,
-            'exfilter': None,
-            'http_filter':  '"rambler.ru" not in http["uri"]',
-            'http_exfilter': None
-        })
-        captured = capsys.readouterr()
-        assert captured.out == "", "unexpected output"
-
-    @pytest.mark.positive
-    def test_pcap2ammo_http_exfilter(
-        self,
-        prepare_data_file,
-        capsys
-    ):
-        """Check main function parse input file with filter correctly"""
-
-        http_request = "GET https://rambler.ru/ HTTP/1.1\r\n" + \
-                       "Host: rambler.ru\r\n" + \
-                       "Content-Length: 0\r\n\r\n"
-        params = {
-            'ip': {
-                'src': socket.inet_aton('10.4.0.136')
-            }
-        }
-        ethernet = self.generate_custom_http_request_packet(
-            http_request,
-            params
-        )
-        data = [{
-            'timestamp': 1489136209.000001,
-            'data': ethernet.__bytes__()
-        }]
-        filename = prepare_data_file(data)
-
-        # match filter
-        pcap2ammo.pcap2ammo({
-            'input': filename,
-            'output': False,
-            'stats_only': False,
-            'add_header': [],
-            'delete_header': [],
-            'filter': None,
-            'exfilter': None,
-            'http_filter': None,
-            'http_exfilter': '"rambler.ru" not in http["uri"]'
-        })
-        captured = capsys.readouterr()
-        assert captured.out == \
-            str(len(http_request)) + " \n" + \
-            http_request, "unexpected output"
-
-        # unmatch filter
-        pcap2ammo.pcap2ammo({
-            'input': filename,
-            'output': False,
-            'stats_only': False,
-            'add_header': [],
-            'delete_header': [],
-            'filter': None,
-            'exfilter': None,
-            'http_filter': None,
-            'http_exfilter': '"rambler.ru" in http["uri"]'
+            'http_filter':  '"rambler.ru" != http.headers["host"]'
         })
         captured = capsys.readouterr()
         assert captured.out == "", "unexpected output"
@@ -601,9 +528,7 @@ class TestParseHttp(object):
             'add_header': [],
             'delete_header': [],
             'filter': None,
-            'exfilter': None,
-            'http_filter': None,
-            'http_exfilter': None
+            'http_filter': None
         })
         captured = capsys.readouterr()
         assert captured.out == \
@@ -625,8 +550,6 @@ class TestParseHttp(object):
                 'add_header': [],
                 'delete_header': [],
                 'filter': None,
-                'exfilter': None,
-                'http_filter': None,
-                'http_exfilter': None
+                'http_filter': None
             })
         assert e.value.args[0] == 'input filename is not specified or empty'

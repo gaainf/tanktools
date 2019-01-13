@@ -435,20 +435,20 @@ class TestPhout(object):
 Percentiles for 10 requests
      from 2018-01-18 20:09:42.983
      to   2018-01-18 20:09:43.436:
-quantile (%)  latency (mks)
-        10.0           4549
-        20.0           4575
-        30.0           4699
-        40.0           4947
-        50.0           5135
-        60.0           5240
-        70.0           5394
-        80.0           5612
-        90.0           5744
-        95.0           5764
-        98.0           5776
-        99.0           5780
-       100.0           5785
+ quantile (%)  latency (mks)
+         10.0           4549
+         20.0           4575
+         30.0           4699
+         40.0           4947
+         50.0           5135
+         60.0           5240
+         70.0           5394
+         80.0           5612
+         90.0           5744
+         95.0           5764
+         98.0           5776
+         99.0           5780
+        100.0           5785
 """
         assert out == expected_output, "unexpected output text"
         assert err == "", "error is absent"
@@ -571,11 +571,11 @@ quantile (%)  latency (mks)
         filename = remove_data_file()
         self.set_phout_file(filename, data)
         data_frame = phout.parse_phout(filename)
-        expected_output = u"""HTTP code  count percent (%)
-      200      4       40.00
-      400      3       30.00
-      500      2       20.00
-        0      1       10.00
+        expected_output = u""" HTTP code  count percent (%)
+       200      4       40.00
+       400      3       30.00
+       500      2       20.00
+         0      1       10.00
 """
         phout.print_http_reponses(data_frame)
         out, err = capsys.readouterr()
