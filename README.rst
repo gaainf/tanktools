@@ -17,7 +17,7 @@ To convert pcap file to Yandex-tank ammo format `pcap2ammo` tool was added.
 It should be available in your system bin directory right after the package
 installation.
 HTTP request from pcap file is extracted completely with line
-breackers headers and body.
+breakers headers and body.
 
 So you can:
 
@@ -259,24 +259,24 @@ Filter HTTP packets
 
 .. code:: bash
 
-    pcap2ammo -i file.pcap -F '"rambler.ru" in http["uri"]'
+    pcap2ammo -i file.pcap -F '"rambler.ru" in http.uri'
 
 You can use logical expressions in filters
 
 .. code:: bash
 
-    pcap2ammo -i file.pcap -F '"keep-alive" in http["headers"]["connection"] or "Keep-alive" in http["headers"]["connection"]'
+    pcap2ammo -i file.pcap -F '"keep-alive" in http.headers["connection"] or "Keep-alive" in http.headers["connection"]'
 
 String functions over HTTP headers
 
 .. code:: bash
 
-    pcap2ammo -i file.pcap -F '"keep-alive" in http["headers"]["connection"].lower()'
+    pcap2ammo -i file.pcap -F '"keep-alive" in http.headers["connection"].lower()'
 
 Use excluding filters also
 
 .. code:: bash
 
-    pcap2ammo -i file.pcap -F '"rambler.ru" in http["uri"]' -E '"dsp-rambler.ru" in http["uri"]'
+    pcap2ammo -i file.pcap -F '"rambler.ru" != http.headers["host"]'
 
 See more information about filters in `pcaper <https://github.com/gaainf/pcaper/>`_ package description.
