@@ -18,7 +18,7 @@ with open('README.rst') as f:
 
 setuptools_kwargs = {
     'install_requires': [
-        'python-dateutil>=2.5.0',
+        'python-dateutil>=2.8.0',
         'pandas>=0.23.4',
         'flake8>=3.5.0',
         'pcaper>=1.0.2'
