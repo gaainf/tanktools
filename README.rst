@@ -26,7 +26,7 @@ Yandex-tank prepare `phout` file with statistics after load testing.
 You can use **pandas** module in manual mode to handle DataFrame
 or use build-in functions.
 
-Generate Yandex-tank ammos from pcap or har files using `pcap2ammo`
+Generate Yandex-tank ammo from pcap or har files using `pcap2ammo`
 or `har2ammo` scrips. HTTP requests are extracted completely
 with headers and body.
 
