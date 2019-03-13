@@ -125,29 +125,7 @@ def parse_phout(input_file, flags=None):
         if stop_criteria(index, elems[0], flags):
             break
     data_frame = pd.DataFrame(data, columns=PHOUT_FIELDS)
-    data_frame[[
-        'interval_real',
-        'connect_time',
-        'send_time',
-        'latency',
-        'receive_time',
-        'interval_event',
-        'size_out',
-        'size_in',
-        'net_code',
-        'proto_code'
-    ]] = data_frame[[
-        'interval_real',
-        'connect_time',
-        'send_time',
-        'latency',
-        'receive_time',
-        'interval_event',
-        'size_out',
-        'size_in',
-        'net_code',
-        'proto_code'
-    ]].astype(int)
+    data_frame[PHOUT_FIELDS[-10:]] = data_frame[PHOUT_FIELDS[-10:]].astype(int)
     return data_frame
 
 

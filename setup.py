@@ -31,7 +31,8 @@ setuptools_kwargs = {
     ],
     'entry_points': {
         'console_scripts': [
-            'pcap2ammo=tanktools.pcap2ammo:main'
+            'pcap2ammo=tanktools.pcap2ammo:main',
+            'har2ammo=tanktools.har2ammo:main'
         ],
     },
 }

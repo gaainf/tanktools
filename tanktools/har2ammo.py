@@ -11,7 +11,7 @@ import argparse
 import re
 import sys
 from . import _version
-from pcaper import PcapParser
+from pcaper import HarParser
 
 
 def parse_args():
@@ -22,12 +22,12 @@ def parse_args():
     """
 
     parser = argparse.ArgumentParser(
-        description="Parse pcap file " +
+        description="Parse har file " +
                     "and convert HTTP requests to yandex-tank ammo",
         add_help=True
     )
 
-    parser.add_argument('input', help='pcap file to parse')
+    parser.add_argument('input', help='har file to parse')
     parser.add_argument('-o', '--output', help='output ammo file')
     parser.add_argument('-f', '--filter', help='TCP/IP filter')
     parser.add_argument('-F', '--http-filter', help='HTTP filter')
@@ -55,8 +55,8 @@ def parse_args():
     return vars(parser.parse_args())
 
 
-def pcap2ammo(args):
-    """Convert pcap to ammo file
+def har2ammo(args):
+    """Convert har to ammo file
 
     Args:
         args (dict): console arguments
@@ -70,18 +70,18 @@ def pcap2ammo(args):
     else:
         file_handler = sys.stdout
 
-    reader = PcapParser()
+    reader = HarParser()
 
     try:
         if args['stats_only']:
-            for request in reader.read_pcap(args):
+            for request in reader.read_har(args):
                 pass
             print("Stats:")
             stats = reader.get_stats()
             for key in stats.keys():
                 print("\t%s: %d" % (key, stats[key]))
         else:
-            for request in reader.read_pcap(args):
+            for request in reader.read_har(args):
                 if 'delete_header' in args and args['delete_header']:
                     delete_headers(request, args['delete_header'])
                 if 'add_header' in args and args['add_header']:
@@ -167,7 +167,7 @@ def main():
     """The main function"""
 
     args = parse_args()
-    return pcap2ammo(args)
+    return har2ammo(args)
 
 
 def init():
