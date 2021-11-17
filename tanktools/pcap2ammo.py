@@ -160,7 +160,8 @@ def make_ammo(request, case=''):
         "%d %s\n"
         "%s"
     )
-    return ammo_template % (len(request), case, request)
+    request_length = len(bytes(request, encoding="utf_8"))
+    return ammo_template % (request_length, case, request)
 
 
 def main():
