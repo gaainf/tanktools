@@ -10,7 +10,7 @@
 import argparse
 import re
 import sys
-from . import _version
+import _version
 from pcaper import PcapParser
 
 
@@ -86,7 +86,7 @@ def pcap2ammo(args):
                     delete_headers(request, args['delete_header'])
                 if 'add_header' in args and args['add_header']:
                     add_headers(request, args['add_header'])
-                file_handler.write(make_ammo(request.origin))
+                file_handler.write(make_ammo(request))
     except ValueError as e:
         sys.stderr.write('Error: ' + str(e) + "\n")
         return 1
@@ -109,12 +109,9 @@ def delete_headers(request, headers):
     """
 
     for header in headers:
-        if header.lower() in request.headers:
-            request.origin = re.sub(
-                '^' + header + ".+?\r\n",
-                '', request.origin,
-                flags=re.IGNORECASE | re.MULTILINE)
-            del request.headers[header.lower()]
+        norm_header = header.lower()[1:-1]
+        if norm_header in request.headers:
+            del request.headers[norm_header]
     return request
 
 
@@ -131,14 +128,12 @@ def add_headers(request, headers):
     """
 
     for header in headers:
-        arr = re.split(r": *", header, 1)
-        if len(arr) == 2:
-            if arr[0].lower() not in request.headers:
-                request.origin = re.sub(
-                    "\r\n\r\n",
-                    "\r\n" + header + "\r\n\r\n", request.origin,
-                    re.MULTILINE)
-                request.headers[header.lower()] = header
+        header_parts = re.split(r": *", header[1:-1], 1)
+        if len(header_parts) == 2:
+            header_name = header_parts[0].lower()
+            header_value = header_parts[1]
+            if header_name not in request.headers:
+                request.headers[header_name] = header_value
         else:
             raise ValueError("Wrong header format, " +
                              "expected \"<header_name>: <header_value>\"")
@@ -156,12 +151,16 @@ def make_ammo(request, case=''):
         str: string in phantom ammo format
     """
 
+    request_parts = [request.method + " " + request.uri + " HTTP/" + request.version,
+                     "\n".join([(k + ": " + v) for k,v in request.headers.items()]),
+                     (("\n" + request.body) if request.body else "")]
+    request_string = "\n".join(request_parts) + "\n"
     ammo_template = (
         "%d %s\n"
         "%s"
     )
-    request_length = len(bytes(request, encoding="utf_8"))
-    return ammo_template % (request_length, case, request)
+    request_length = len(bytes(request_string, encoding="utf_8"))
+    return ammo_template % (request_length, case, request_string)
 
 
 def main():
