@@ -86,6 +86,10 @@ def pcap2ammo(args):
                     delete_headers(request, args['delete_header'])
                 if 'add_header' in args and args['add_header']:
                     add_headers(request, args['add_header'])
+                if 'content-type' in request.headers:
+                    if request.headers['content-type'].lower().find('multipart/form-data') >= 0:
+                        delete_headers(request, ["'content-length'"])
+                        add_headers(request, ["'content-length: " + str(len(bytes(request.body, encoding="utf_8"))) + "'"])
                 file_handler.write(make_ammo(request))
     except ValueError as e:
         sys.stderr.write('Error: ' + str(e) + "\n")
