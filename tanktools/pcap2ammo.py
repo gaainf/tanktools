@@ -101,6 +101,24 @@ def pcap2ammo(args):
     return 0
 
 
+def normalize_header_arg(header):
+    """Remover enclosing quotes for header
+       and transform it to the lower case
+
+    Args:
+        header (str): header with (or without) enclosing quotes
+
+    Returns:
+        str: header without enclosing quotes in lower case
+    """
+    norm_header = header.lower()
+    if norm_header.startswith('"') or norm_header.startswith("'"):
+        norm_header = norm_header[1:]
+    if norm_header.endswith('"') or norm_header.endswith("'"):
+        norm_header = norm_header[:-1]
+    return norm_header
+
+
 def delete_headers(request, headers):
     """Delete headers from http packet
 
@@ -113,7 +131,7 @@ def delete_headers(request, headers):
     """
 
     for header in headers:
-        norm_header = header.lower()[1:-1]
+        norm_header = normalize_header_arg(header)
         if norm_header in request.headers:
             del request.headers[norm_header]
     return request
@@ -132,7 +150,8 @@ def add_headers(request, headers):
     """
 
     for header in headers:
-        header_parts = re.split(r": *", header[1:-1], 1)
+        norm_header = normalize_header_arg(header)
+        header_parts = re.split(r": *", norm_header, 1)
         if len(header_parts) == 2:
             header_name = header_parts[0].lower()
             header_value = header_parts[1]
