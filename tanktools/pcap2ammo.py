@@ -10,7 +10,7 @@
 import argparse
 import re
 import sys
-from . import _version
+import _version
 from pcaper import PcapParser
 
 
@@ -86,7 +86,11 @@ def pcap2ammo(args):
                     delete_headers(request, args['delete_header'])
                 if 'add_header' in args and args['add_header']:
                     add_headers(request, args['add_header'])
-                file_handler.write(make_ammo(request.origin))
+                if 'content-type' in request.headers:
+                    if request.headers['content-type'].lower().find('multipart/form-data') >= 0:
+                        delete_headers(request, ["'content-length'"])
+                        add_headers(request, ["'content-length: " + str(len(bytes(request.body, encoding="utf_8"))) + "'"])
+                file_handler.write(make_ammo(request))
     except ValueError as e:
         sys.stderr.write('Error: ' + str(e) + "\n")
         return 1
@@ -95,6 +99,24 @@ def pcap2ammo(args):
         file_handler.close()
 
     return 0
+
+
+def normalize_header_arg(header):
+    """Remover enclosing quotes for header
+       and transform it to the lower case
+
+    Args:
+        header (str): header with (or without) enclosing quotes
+
+    Returns:
+        str: header without enclosing quotes in lower case
+    """
+    norm_header = header.lower()
+    if norm_header.startswith('"') or norm_header.startswith("'"):
+        norm_header = norm_header[1:]
+    if norm_header.endswith('"') or norm_header.endswith("'"):
+        norm_header = norm_header[:-1]
+    return norm_header
 
 
 def delete_headers(request, headers):
@@ -109,12 +131,9 @@ def delete_headers(request, headers):
     """
 
     for header in headers:
-        if header.lower() in request.headers:
-            request.origin = re.sub(
-                '^' + header + ".+?\r\n",
-                '', request.origin,
-                flags=re.IGNORECASE | re.MULTILINE)
-            del request.headers[header.lower()]
+        norm_header = normalize_header_arg(header)
+        if norm_header in request.headers:
+            del request.headers[norm_header]
     return request
 
 
@@ -131,14 +150,13 @@ def add_headers(request, headers):
     """
 
     for header in headers:
-        arr = re.split(r": *", header, 1)
-        if len(arr) == 2:
-            if arr[0].lower() not in request.headers:
-                request.origin = re.sub(
-                    "\r\n\r\n",
-                    "\r\n" + header + "\r\n\r\n", request.origin,
-                    re.MULTILINE)
-                request.headers[header.lower()] = header
+        norm_header = normalize_header_arg(header)
+        header_parts = re.split(r": *", norm_header, 1)
+        if len(header_parts) == 2:
+            header_name = header_parts[0].lower()
+            header_value = header_parts[1]
+            if header_name not in request.headers:
+                request.headers[header_name] = header_value
         else:
             raise ValueError("Wrong header format, " +
                              "expected \"<header_name>: <header_value>\"")
@@ -156,11 +174,16 @@ def make_ammo(request, case=''):
         str: string in phantom ammo format
     """
 
+    request_parts = [request.method + " " + request.uri + " HTTP/" + request.version,
+                     "\n".join([(k + ": " + v) for k,v in request.headers.items()]),
+                     (("\n" + request.body) if request.body else "")]
+    request_string = "\n".join(request_parts) + "\n"
     ammo_template = (
         "%d %s\n"
         "%s"
     )
-    return ammo_template % (len(request), case, request)
+    request_length = len(bytes(request_string, encoding="utf_8"))
+    return ammo_template % (request_length, case, request_string)
 
 
 def main():
